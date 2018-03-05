@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        div{
+            background: blue;
+            height:1000px;
+        }
+    </style>
+    <script type="text/javascript" src="vendor/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="jquery.mousewheel.js"></script>
+</head>
+<body>
+    <div id="h">哈哈</div>
+    <div>
+        <h5>操作提示</h5>
+        <div>
+            <a>开始选择页面元素</a>
+        </div>
+        <!-- 进一个页面中需要采集链接的时候 -->
+        <div>
+            <p>已选择1个元素，您可以继续选择，或进行以下操作：</p>
+            <ul>
+                <li class="selectone"><a>仅选择此元素</a></li>
+                <li class="selectsimilar"><a>选择此元素的同类元素</a></li>
+                <li class="clickone"><a>点击此链接</a></li>
+                <li class="cancelselected"><a>取消选择</a></li>
+            </ul>
+        </div>
+        <div>
+            <p>已选择n个元素，您可以继续选择，或进行以下操作：</p>
+            <ul>
+                <li class="selectsimilar"><a>选择当前元素的同类元素</a></li>
+                <li class="clickall"><a>循环点击这些元素内的链接</a></li>
+                <li class="cancelselected"><a>取消选择</a></li>
+            </ul>
+        </div>
+        <div>
+            <p>已选择n个链接，您可以进行以下操作：</p>
+            <ul>
+                <li class=""><a>采集该链接文本</a></li>
+                <li class=""><a>采集该链接地址</a></li>
+                <li class=""><a>取消选择</a></li>
+            </ul>
+        </div>
+        <!-- 点击进一个链接要采集文本 -->
+        <div>
+            <p>请选择您要采集的文本：</p>
+            <ul>
+                <li><a>采集该链接文本</a></li>
+                <li><a>采集该链接地址</a></li>
+                <li><a>取消选择</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    window.onwheel=document.onwheel=function(e){
+        // console.log($("#h")[0].getBoundingClientRect().top)
+    }
+    window.onscroll=document.onscroll=function(e){
+        console.log($("#h")[0].getBoundingClientRect().top)
+    }
+    $("document").mousewheel(function(e){
+        console.log($("#h")[0].getBoundingClientRect().top)
+        $(window).scroll()
+    })
+</script>
+</html>
