@@ -65,6 +65,20 @@
         getMultiSelector: function(el) {
 
         },
+        getSubSelector:function(parentpath,subpath){
+            console.log(parentpath)
+            var childtags=[];
+            var $el=$(subpath.pathstring);
+            for(; $(parentpath.pathstring).index($el)<=-1; $el = $el.parent()){
+                console.log($(parentpath.pathstring).index($el))
+                childtags.unshift($el[0].tagName);
+            }
+            var path={
+                patharray:childtags
+            }
+            path.pathstring=path.patharray.join('>')
+            return path;
+        },
         /**
          * 获取同类元素的通用css路径
          *

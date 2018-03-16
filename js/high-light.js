@@ -17,7 +17,7 @@
             }
             return sizes;
         },
-        addSelectedShadowDom: function(rootshadow, sizes, type, processed, current) {
+        addSelectedShadowDom: function(rootshadow, sizes, type, processed, current,parent) {
             var rootshadow = rootshadow || this.rootshadow || null;
             var innerShadowRoot = document.createElement("div");
             innerShadowRoot.className = "selected-element  caiyun-highlight";
@@ -32,11 +32,10 @@
                 "left": sizes.left + "px",
                 "position": "absolute",
                 "box-sizing": "border-box",
-                "border": type == 'A' ? "2px solid rgb(10, 222, 57)" : "2px dashed rgb(243, 33, 33)",
-                "background": processed ? "rgba(123, 251, 140, 0.57)" : "rgba(251, 123, 123, 0.57)",
-                "box-shadow": current ? "0 0 0 2px #03A9F4" : "none",
+                "border": type == 'A' ? "1px solid #08b91d" : "1px dashed #ff5722",
+                "background": parent?"rgba(179, 229, 252, 0.57)":(processed ? "rgba(255, 160, 0, 0.57)" : "rgba(2, 136, 209, 0.57)"),
+                "box-shadow": current ? "0 0 0 2px #f71198" : "none",
                 "z-index": 99999,
-                "border-radius": "3px",
                 "pointer-events": "none" //神属性
             });
             innershadow.append(innerShadowElement);
@@ -81,8 +80,13 @@
             var rootshadow = rootshadow || this.rootshadow || null;
             rootshadow.innerHTML = '';
         },
-        repainSelectedShadowDom: function(rootshadow, paths, processedpaths, currentpaths) {
-            var rootshadow = rootshadow || this.rootshadow || null;
+        repainSelectedShadowDom: function() {
+            var rootshadow=CaiyunScope.rootshadow;
+            var paths=CaiyunScope.totalpaths;
+            var processedpaths=CaiyunScope.processedpaths;
+            var currentpaths=CaiyunScope.currentpaths;
+            var parentpaths=CaiyunScope.parentpaths;
+            rootshadow = rootshadow || this.rootshadow || null;
             this.clearallSelectedShadowDom(rootshadow);
             var that = this;
             var totalpaths = {};
@@ -109,12 +113,21 @@
                 })
 
             }
+            if (parentpaths) {
+                $.each(parentpaths, function(i, e) {
+                    if (!totalpaths[e.pathstring]) {
+                        totalpaths[e.pathstring] = {};
+                    }
+                    $.extend(true, totalpaths[e.pathstring], e, { parent: true })
+                })
+
+            }
             for (var k in totalpaths) {
                 (function(e) {
                     var host = $(e.pathstring);
                     host.each(function(i, ele) {
                         var sizes = that.getSizes(ele);
-                        that.addSelectedShadowDom(rootshadow, sizes, ele.tagName, e.processed, e.current);
+                        that.addSelectedShadowDom(rootshadow, sizes, ele.tagName, e.processed, e.current,e.parent);
                     })
                 })(totalpaths[k])
             }

@@ -1,6 +1,6 @@
 {
     "manifest_version": 2,
-    "name": "我的扩展",
+    "name": "我的彩云扩展",
     "description": "This extension allows the user to change the background color of the current page.",
     "version": "1.0",
     "browser_action":

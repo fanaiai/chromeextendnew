@@ -10,9 +10,21 @@
 //         console.log(res);
 //     }
 // })
-function getLoginInfo(){
-    var taskid=getQuery('taskid');
-    var step=getQuery('step');
+function getLoginInfo() {
+    var task_id = getQuery('caiyuntaskid');
+    var step = getQuery('step');
+    chrome.storage.local.get({ caiyunstep: 1 }, function(items) {
+        caiyunstep = getQuery("caiyunstep") || items.caiyunstep;
+        chrome.storage.local.set({ caiyunstep: caiyunstep }, function() {});
+        if (caiyunstep == 1) {
+            chrome.storage.local.set({ caiyunseedurl: window.location.href }, function() {});
+            chrome.storage.local.set({ task_id: task_id }, function() {});
+        }
+    });
+    chrome.storage.local.get({ caiyunsteps: [] }, function(items) {
+        CaiyunSteps = (caiyunstep > 1) ? items.caiyunsteps : [];
+        chrome.storage.local.set({ caiyunsteps: CaiyunSteps }, function() {});
+    });
     return true;
 }
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) { //获取用户名
@@ -20,91 +32,45 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) { /
 });
 (function(root) {
     root.CaiyunSteps = [];
-    chrome.storage.local.get({ caiyunstep:1 }, function(items) {
-        console.log(items.caiyunstep)
-        root.caiyunstep = getQuery("caiyunstep") || items.caiyunstep;
-        chrome.storage.local.set({ caiyunstep: caiyunstep }, function() {
-        });
-    });
-    chrome.storage.local.get({ caiyunsteps:[] }, function(items) {
-        root.CaiyunSteps = (caiyunstep>1)?items.caiyunsteps:[];
-        console.log(root.CaiyunSteps)
-        chrome.storage.local.set({ caiyunsteps: CaiyunSteps }, function() {
-        });
-    });
-    root.CaiyunPostDataTemp = {
-        "url": '',
-        "setting": {
-            "seed_type": "url_single", //单个url
-            "seed_urls": "http://nc.auto.sina.com.cn/shcs/list.shtml",
-            "protocol": "http"
-        },
-        "css_selecter": [],
-        "extradata": [{
-            "name": "链接标题",
-            "extratype": "txt",
-            "css_selecter": []
-        }],
-        "openpage": {
-            "css_selecter": [],
-            "extradata": [{
-                "name": "链接标题",
-                "extratype": "txt",
-                "css_selecter": []
-            }],
-            "openpage": {}
-        }
-    }
-    root.CaiyunPostData = {
-        "url": '',
-        "setting": {
-            "seed_type": "url_single", //单个url
-            "seed_urls": "http://nc.auto.sina.com.cn/shcs/list.shtml",
-            "protocol": "http"
-        },
-        taskid:-1
-    }
     root.CaiyunScope = {
         cssselector: new CssSelector({}),
-        uniquepath: {},
-        totalpaths: [],
-        processedpaths: [],
-        currentpaths: [],
+        uniquepath: {}, //当前所选元素
+        totalpaths: [], //所有路径
+        processedpaths: [], //设置过属性的路径
+        currentpaths: [], //当前选择的所有路径，如similar
+        parentpaths: [], //父元素路径
         rootshadow: {},
         startcatch: false,
         operateshadow: {},
         opeshadowcon: {},
-        selectmode: 0 //操作状态：0 初始 ,1 选择了一个元素，2 确定选择一个元素 ，3 选择多个元素
-    }
-    root.CaiyunScope.checkStep = function(confirmone) {
-        $(CaiyunScope.opeshadowcon).find('.extracttxt-container').hide();
-        $(CaiyunScope.opeshadowcon).find('.extractattr-container').hide();
-        $(CaiyunScope.opeshadowcon).find(".select-div").hide();
-        CaiyunScope.selectmode = confirmone ? 2 : (CaiyunScope.totalpaths.length <= 0 ? 0 : (CaiyunScope.totalpaths.length == 1 ? 1 : 3));
-        switch (CaiyunScope.selectmode) {
-            case 1:
-                $(CaiyunScope.opeshadowcon).find(".selectone-container").show();
-                break;
-            case 2:
-                $(CaiyunScope.opeshadowcon).find(".selectone-ope-container").show();
-                console.log('one-ope')
-                break;
-            case 3:
-                $(CaiyunScope.opeshadowcon).find("#currentelenum").text(CaiyunScope.currentpaths.length);
-                $(CaiyunScope.opeshadowcon).find(".selectmul-ope-container").show();
-                break;
-            default:
-                $(CaiyunScope.opeshadowcon).find(".select-div").hide();
-                break;
+        extraclass: '',
+        datamode: 0 //操作状态：0 初始 ,1 选择了一个元素，2 确定选择一个元素 ，3 选择多个元素
+    };
+    root.checkStep = function(modeindex) {
+        console.log(CaiyunScope.datamode, CaiyunScope.extraclass);
+        var $container = $(CaiyunScope.opeshadowcon);
+        $container.find('.extracttxt-container').hide();
+        $container.find('.extractattr-container').hide();
+        $container.find(".select-div").hide();
+        $container.find('.extraclass').hide();
+        if (modeindex) {
+            if (CaiyunScope.datamode == 2 && modeindex == 1) {
+                console.log("showshow")
+                $container.find('.mode' + 3).show();
+                console.log(CaiyunScope.extraclass)
+                $container.find('.' + CaiyunScope.extraclass).show();
+            } else {
+                $container.find('.mode' + modeindex).show();
+            }
+            $container.find("#currentelenum").text(CaiyunScope.currentpaths.length);
         }
     }
 
 })(window)
 $(document).ready(function() {
-    if(!getLoginInfo()){
+    if (!getLoginInfo()) {
         return false;
     }
-    CaiyunPostData.url = window.location.href;
     $("body").append("<div id='caiyun-root' class='caiyun-root caiyun-highlight' style='width:0;height:0'></div>");
     $("body").append("<caiyun-operate-container></caiyun-operate-container>");
     CaiyunScope.rootshadow = $("#caiyun-root")[0].createShadowRoot();
@@ -114,17 +80,26 @@ $(document).ready(function() {
         if (CaiyunScope.startcatch) {
             e.preventDefault();
             CaiyunScope.uniquepath = CaiyunScope.cssselector.getUniqueSelector(el);
-            // CaiyunScope.operateshadow.querySelector("#csspath").value=CaiyunScope.uniquepath.pathstring;
-            if (CaiyunScope.totalpaths.includeItem(CaiyunScope.uniquepath) <= -1) {
-                CaiyunScope.totalpaths.push(CaiyunScope.uniquepath);
-                CaiyunScope.currentpaths = CaiyunScope.totalpaths;
-                HightLight.repainSelectedShadowDom(CaiyunScope.rootshadow, CaiyunScope.totalpaths, CaiyunScope.processedpaths,CaiyunScope.currentpaths);
-            } else {
-                CaiyunScope.totalpaths.splice(CaiyunScope.totalpaths.includeItem(CaiyunScope.uniquepath), 1);
-                CaiyunScope.currentpaths = CaiyunScope.totalpaths;
-                HightLight.repainSelectedShadowDom(CaiyunScope.rootshadow, CaiyunScope.totalpaths, CaiyunScope.processedpaths,CaiyunScope.currentpaths);
+            // if (CaiyunScope.totalpaths.includeItem(CaiyunScope.uniquepath) <= -1) {
+            //     CaiyunScope.totalpaths.push(CaiyunScope.uniquepath);
+            // } else {
+            //     CaiyunScope.totalpaths.splice(CaiyunScope.totalpaths.includeItem(CaiyunScope.uniquepath), 1);
+            // }
+            // CaiyunScope.currentpaths = CaiyunScope.totalpaths;
+            // if(CaiyunScope.parentpaths.length>0 && CaiyunScope.currentpaths.includeItem(CaiyunScope.parentpaths[0])>-1){
+            // CaiyunScope.currentpaths.splice(CaiyunScope.currentpaths.includeItem(CaiyunScope.parentpaths[0]), 1);}
+            if (CaiyunScope.parentpaths.length <= 0) {
+                CaiyunScope.totalpaths = [CaiyunScope.uniquepath];
+                CaiyunScope.similarpath = ''
             }
-            CaiyunScope.checkStep();
+            else if (CaiyunScope.totalpaths.includeItem(CaiyunScope.uniquepath) <= -1) {
+                CaiyunScope.totalpaths.push(CaiyunScope.uniquepath);
+            }
+
+            CaiyunScope.currentpaths = [CaiyunScope.uniquepath];
+            console.log(CaiyunScope)
+            HightLight.repainSelectedShadowDom();
+            checkStep(1);
         }
     })
     $(document).mouseover(function(e) {
