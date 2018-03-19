@@ -39,25 +39,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) { /
         processedpaths: [], //设置过属性的路径
         currentpaths: [], //当前选择的所有路径，如similar
         parentpaths: [], //父元素路径
+        pagepath: {}, //父元素路径
         rootshadow: {},
         startcatch: false,
+        setpaging:false,
         operateshadow: {},
         opeshadowcon: {},
         extraclass: '',
         datamode: 0 //操作状态：0 初始 ,1 选择了一个元素，2 确定选择一个元素 ，3 选择多个元素
     };
     root.checkStep = function(modeindex) {
-        console.log(CaiyunScope.datamode, CaiyunScope.extraclass);
         var $container = $(CaiyunScope.opeshadowcon);
         $container.find('.extracttxt-container').hide();
         $container.find('.extractattr-container').hide();
         $container.find(".select-div").hide();
         $container.find('.extraclass').hide();
         if (modeindex) {
-            if (CaiyunScope.datamode == 2 && modeindex == 1) {
-                console.log("showshow")
+            if ((CaiyunScope.datamode == 2 || (CaiyunScope.extraclass=='extraurl' && CaiyunScope.datamode == 1)) && modeindex == 1) {
                 $container.find('.mode' + 3).show();
-                console.log(CaiyunScope.extraclass)
                 $container.find('.' + CaiyunScope.extraclass).show();
             } else {
                 $container.find('.mode' + modeindex).show();
@@ -80,26 +79,14 @@ $(document).ready(function() {
         if (CaiyunScope.startcatch) {
             e.preventDefault();
             CaiyunScope.uniquepath = CaiyunScope.cssselector.getUniqueSelector(el);
-            // if (CaiyunScope.totalpaths.includeItem(CaiyunScope.uniquepath) <= -1) {
-            //     CaiyunScope.totalpaths.push(CaiyunScope.uniquepath);
-            // } else {
-            //     CaiyunScope.totalpaths.splice(CaiyunScope.totalpaths.includeItem(CaiyunScope.uniquepath), 1);
-            // }
-            // CaiyunScope.currentpaths = CaiyunScope.totalpaths;
-            // if(CaiyunScope.parentpaths.length>0 && CaiyunScope.currentpaths.includeItem(CaiyunScope.parentpaths[0])>-1){
-            // CaiyunScope.currentpaths.splice(CaiyunScope.currentpaths.includeItem(CaiyunScope.parentpaths[0]), 1);}
             if (CaiyunScope.parentpaths.length <= 0) {
                 CaiyunScope.totalpaths = [CaiyunScope.uniquepath];
                 CaiyunScope.similarpath = ''
             }
-            else if (CaiyunScope.totalpaths.includeItem(CaiyunScope.uniquepath) <= -1) {
-                CaiyunScope.totalpaths.push(CaiyunScope.uniquepath);
-            }
-
             CaiyunScope.currentpaths = [CaiyunScope.uniquepath];
-            console.log(CaiyunScope)
             HightLight.repainSelectedShadowDom();
-            checkStep(1);
+            if(!CaiyunScope.setpaging){
+            checkStep(1);}
         }
     })
     $(document).mouseover(function(e) {

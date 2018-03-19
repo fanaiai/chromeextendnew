@@ -23,6 +23,22 @@ xtag.register('caiyun-operate-container', {
                                 border-collapse: collapse;
                                 border-spacing: 0;
                             }
+                            .clearfix:after,.kalendae:after{content:".";display:block;height:0;clear:both;visibility:hidden}
+.clearfix,.kalendae{*+height:1%;}
+                            .fr{
+                                float: right;
+                            }
+                            .fl{
+                                float:left;
+                            }
+                            input{
+                                    line-height: 24px;
+                                    text-indent: 4px;
+                                    border-radius: 3px;
+                                    border: 1px solid rgb(204, 204, 204);
+                                    height: 25px;
+                                    width: 60%;
+                            }
                             .catch-container{
                                 width: 100%;
                                 border-radius: 3px;
@@ -40,11 +56,12 @@ xtag.register('caiyun-operate-container', {
                                 list-style: none;
                                 line-height:28px;
                                 font-size:14px;
-                                padding: 0;
+                                    padding: 10px 0;
                             }
                             .catch-container ul li{
                                 padding:0 10px;
                                 background:rgb(250, 253, 255);
+                                line-height:25px;
                             }
                             a{
                                 cursor: pointer;
@@ -117,6 +134,24 @@ xtag.register('caiyun-operate-container', {
                                 padding: 10px 10px 0 10px;
                                 background: rgb(238, 238, 238);
                             }
+                            .horidiv{
+                                padding:5px 0;
+                            }
+                            .horidiv span,.horidiv input{
+                                display:inline-block;
+                                float:left;
+                                margin:0;
+                            }
+                            .horidiv span{
+                                padding: 0 10px 0 5px;
+                                line-height:20px;
+                            }
+                            .horidiv input[type='radio']{
+                                top:4px;
+                                position: relative;
+                            }
+                            .pagingcont{
+                            }
                         </style>`;
             var innerHtml = `
                 <div class="catch-container">
@@ -145,8 +180,10 @@ xtag.register('caiyun-operate-container', {
                                         <a class="saveattr" data-mode='1'>保存</a>
                                     </div>
                                 </li>
-                                <li class="clickone" data-mode='1'><a>点击该元素内的链接</a></li>
-                                <li class="cancelselected" data-mode='1'><a>取消选择</a></li>
+                                <li><a class="setpage" data-mode='1'>配置翻页</a>
+                                </li>
+                                <li><a class="clickone" data-mode='1' data-extraclass="extraurl">点击该元素内的链接</a></li>
+                                <!-- <li class="cancelselected" data-mode='1'><a>取消选择</a></li>-->
                             </ul>
                         </div>
                         <div class="mode2 select-div">
@@ -158,8 +195,10 @@ xtag.register('caiyun-operate-container', {
                                 <li>
                                     <a class="extractattr" data-mode='2' data-extraclass="extraattr">循环提取属性</a>
                                 </li>
+                                <li><a class="setpage" data-mode='2'>配置翻页</a>
+                                </li>
                                 <li><a class="clickall"  data-mode='2' data-extraclass="extraurl">循环点击这些元素内的链接</a></li>
-                                <li class="cancelselected"  data-mode='2'><a>取消选择</a></li>
+                                <!-- <li class="cancelselected"  data-mode='2'><a>取消选择</a></li>-->
                             </ul>
                         </div>
                         <div class="mode3 select-div">
@@ -186,8 +225,31 @@ xtag.register('caiyun-operate-container', {
                                         <a class="openlink" data-mode='3'>确定</a>
                                     </div>
                                 </li>
-                                <li class="cancelselected" data-mode='3'><a>取消</a></li>
+                                <!-- <li class="cancelselected" data-mode='3'><a>取消</a></li>-->
                             </ul>
+                        </div>
+                        <div class="mode4 select-div">
+                            <div>
+                                <div class="clearfix">
+                                <div class="fl horidiv clearfix"><input class="pageeventtype" type="radio" value="" name="pageeventtype" checked><span>无翻页</span></div>
+                                <div class="fl horidiv clearfix"><input class="pageeventtype" type="radio" value="roll" name="pageeventtype"><span>滚动翻页</span></div>
+                                <div class="fl horidiv clearfix"><input class="pageeventtype" type="radio" value="click" name="pageeventtype"><span>点击翻页</span></div>
+                                </div>
+                                </div>
+
+                                <div class="pagingcont roll">
+                                    <div class="horidiv clearfix"><span>滚动间隔</span><input type="text" value="100" class="interval"></div>
+                                    <div class="horidiv clearfix"><span>滚动次数</span><input type="text" value="10" class="times"></div>
+                                </div>
+                                <div class="pagingcont click">
+                                    <div class="horidiv clearfix"><span>翻页css路径</span><input type="text" class="pagecss" placeholder="请选择翻页元素"></div>
+                                    <div class="clearfix">
+                                    <div class="fl horidiv clearfix"><input class="eventeffect" type="radio" value="reload" name="eventeffect" checked><span>整个页面刷新</span></div>
+                                    <div class="fl horidiv clearfix"><input class="eventeffect" type="radio" value="open_blank" name="eventeffect"><span>打开新页面</span></div>
+                                    <div class="fl horidiv clearfix"><input class="eventeffect" type="radio" value="ajax" name="eventeffect"><span>ajax异步加载</span></div>
+                                    </div>
+                            </div>
+                                <a class="pageconfirm">确定</a>
                         </div>
                         <!--<div class="info">
                             <textarea id="csspath"></textarea>
@@ -211,6 +273,8 @@ xtag.register('caiyun-operate-container', {
             this.extradata = [];
             this.css_selecter = [];
             this.addShadowEvents();
+            this.domevent={};
+            $shadowcontainer.find(".pagingcont").hide();
         },
         addShadowEvents: function() {
             var that = this;
@@ -224,7 +288,6 @@ xtag.register('caiyun-operate-container', {
                 var $el = $(e.target);
                 var classname = $(e.target).attr("class") || $(e.target).parent().attr("class");
                 var datamode = $el.attr('data-mode');
-
                 switch (classname) {
                     case 'selectsimilar':
                         CaiyunScope.datamode = datamode;
@@ -237,33 +300,32 @@ xtag.register('caiyun-operate-container', {
                         break;
                     case 'startcatch':
                         CaiyunScope.datamode = datamode;
-                        CaiyunScope.startcatch = !CaiyunScope.startcatch;
-                        $(e.target).text(CaiyunScope.startcatch ? '停止选择页面元素' : '开始选择页面元素');
+                        that.changeCatchStatus(!CaiyunScope.startcatch);
                         break;
                     case 'clearselection':
                         CaiyunScope.datamode = datamode;
                         CaiyunScope.totalpaths = [];
                         CaiyunScope.currentpaths = [];
                         CaiyunScope.processedpaths = [];
+                        CaiyunScope.parentpaths = [];
+                        CaiyunScope.similarpath = {};
                         that.extradata = [];
                         that.rendInfo();
                         HightLight.repainSelectedShadowDom();
-                        CaiyunScope.checkStep();
+                        checkStep(false);
                         break;
                     case 'clickone':
+                        that.changeCatchStatus(true);
+                        CaiyunScope.extraclass = $el.attr('data-extraclass');
                         CaiyunScope.datamode = datamode;
-                        that.css_selecter.push(CaiyunScope.uniquepath);
-                        that.openLink();
+                        checkStep(1);
                         break;
                     case 'clickall':
-                        // CaiyunScope.datamode = datamode;
-                        // that.css_selecter = CaiyunScope.totalpaths;
-                        // that.openLink();
-                        CaiyunScope.startcatch = true;
+                        that.changeCatchStatus(true);
                         CaiyunScope.extraclass = $el.attr('data-extraclass');
                         CaiyunScope.datamode = datamode;
                         if (CaiyunScope.parentpaths.length <= 0) {
-                            CaiyunScope.parentpaths = $.extend(true, {}, CaiyunScope.currentpaths);
+                            CaiyunScope.parentpaths = $.extend(true, [], CaiyunScope.currentpaths);
                             CaiyunScope.currentpaths = [];
                             HightLight.repainSelectedShadowDom();
                         }
@@ -274,26 +336,30 @@ xtag.register('caiyun-operate-container', {
                         var extradata = {
                             "name": $el.parent().children('.fieldname').val(),
                             "attr_name": $el.parent().children('.attrname').val(),
-                            "extratype": "txt",
+                            "extratype": "attr",
                             "css_selecter": CaiyunScope.currentpaths,
                             "custom_css_selecter": ""
                         }
-                        extradata.custom_css_selecter = CaiyunScope.cssselector.getSubSelector(CaiyunScope.similarpath, CaiyunScope.currentpaths[0])
-                        CaiyunScope.startcatch = false;
-                        checkStep(2);
-                        that.saveExtractData($el, extradata,true);
-                        // that.css_selecter.push(CaiyunScope.uniquepath);
+                        // that.changeCatchStatus(false);
+                        if (CaiyunScope.similarpath.pathstring) {
+                            extradata.custom_css_selecter = CaiyunScope.cssselector.getSubSelector(CaiyunScope.similarpath, CaiyunScope.currentpaths[0])
+                            checkStep(1);
+                        } else {
+                            extradata.custom_css_selecter = extradata.css_selecter[0]
+                            checkStep(2);
+                        }
+                        that.saveExtractData($el, extradata, true);
                         that.openLink(extradata.attr_name);
                         break;
                     case 'extracttxt':
-                        CaiyunScope.startcatch = true;
+                        that.changeCatchStatus(true);
                         CaiyunScope.extraclass = $el.attr('data-extraclass');
                         CaiyunScope.datamode = datamode;
                         if (datamode == 1) {
                             $el.next('.extracttxt-container').toggle();
                         } else {
                             if (CaiyunScope.parentpaths.length <= 0) {
-                                CaiyunScope.parentpaths = $.extend(true, {}, CaiyunScope.currentpaths);
+                                CaiyunScope.parentpaths = $.extend(true, [], CaiyunScope.currentpaths);
                                 CaiyunScope.currentpaths = [];
                                 HightLight.repainSelectedShadowDom();
                             }
@@ -301,7 +367,7 @@ xtag.register('caiyun-operate-container', {
                         }
                         break;
                     case 'extractattr':
-                        CaiyunScope.startcatch = true;
+                        that.changeCatchStatus(true);
                         CaiyunScope.extraclass = $el.attr('data-extraclass');
                         CaiyunScope.datamode = datamode;
                         if (datamode == 1) {
@@ -326,9 +392,10 @@ xtag.register('caiyun-operate-container', {
                         }
                         if (datamode == 3) {
                             extradata.custom_css_selecter = CaiyunScope.cssselector.getSubSelector(CaiyunScope.similarpath, CaiyunScope.currentpaths[0])
-                            CaiyunScope.startcatch = false;
+                            that.changeCatchStatus(false);
                             checkStep(2);
                         } else {
+                            $shadowcontainer.find('.selectsimilar').hide();
                             $el.parent().hide();
                         }
                         that.saveExtractData($el, extradata);
@@ -343,15 +410,49 @@ xtag.register('caiyun-operate-container', {
                             "custom_css_selecter": ""
                         }
                         if (datamode == 3) {
-                            console.log(CaiyunScope.similarpath, CaiyunScope.currentpaths[0])
                             extradata.custom_css_selecter = CaiyunScope.cssselector.getSubSelector(CaiyunScope.similarpath, CaiyunScope.currentpaths[0])
-                            console.log(extradata.custom_css_selecter)
-                            CaiyunScope.startcatch = false;
+                            that.changeCatchStatus(false);
                             checkStep(2);
                         } else {
+                            $shadowcontainer.find('.selectsimilar').hide();
                             $el.parent().hide();
                         }
                         that.saveExtractData($el, extradata);
+                        break;
+                    case 'setpage':
+                        that.changeCatchStatus(false);
+                        CaiyunScope.datamode = datamode;
+                        checkStep(4);
+                        break;
+                    case 'savepage':
+                        // CaiyunScope.datamode = datamode;
+                        checkStep(CaiyunScope.datamode);
+                        break;
+                    case 'pageeventtype':
+                        var val=$el.val();
+                        that.domevent.event_type=val;
+                        $shadowcontainer.find(".pagingcont").hide();
+                        if(val!=''){
+                        $shadowcontainer.find("."+val).show();}
+                        if(val=='click'){
+                            CaiyunScope.setpaging=true;
+                            that.changeCatchStatus(true);
+                        }
+                        break;
+                    case 'pageconfirm':
+                        if(that.domevent.event_type=='roll'){
+                            that.domevent.roll_interval=$shadowcontainer.find(".interval").val();
+                            that.domevent.roll_times=$shadowcontainer.find(".times").val();
+                        }
+                        else if(that.domevent.event_type=='click'){
+                            that.domevent.event_effect=$shadowcontainer.find(".eventeffect:checked").val();
+                            that.domevent.css_selecter=CaiyunScope.uniquepath.pathstring;
+                            CaiyunScope.pagepath=CaiyunScope.uniquepath;
+                            CaiyunScope.currentpaths=[];
+                        }
+                        CaiyunScope.setpaging=false;
+                        HightLight.repainSelectedShadowDom();
+                        checkStep(CaiyunScope.datamode);
                         break;
                     case 'cancelselected':
                         CaiyunScope.datamode = datamode;
@@ -370,7 +471,7 @@ xtag.register('caiyun-operate-container', {
                         CaiyunScope.currentpaths = CaiyunScope.totalpaths = [];
                         that.rendInfo();
                         HightLight.repainSelectedShadowDom(CaiyunScope.rootshadow, CaiyunScope.totalpaths, CaiyunScope.processedpaths, CaiyunScope.currentpaths);
-                        CaiyunScope.checkStep();
+                        checkStep();
                         break;
                     case 'finish':
                         CaiyunScope.datamode = datamode;
@@ -378,7 +479,8 @@ xtag.register('caiyun-operate-container', {
                             "extradata": that.extradata,
                             "css_selecter": [],
                             "parentpaths": CaiyunScope.parentpaths,
-                            "similarpath": CaiyunScope.similarpath
+                            "similarpath": CaiyunScope.similarpath,
+                            "domevent":that.domevent
                         }
                         CaiyunSteps[caiyunstep - 1] = openpage;
                         chrome.storage.local.set({ caiyunsteps: CaiyunSteps }, function() {});
@@ -399,40 +501,36 @@ xtag.register('caiyun-operate-container', {
                 CaiyunScope.checkStep();
             })
         },
-        saveExtractData: function($el, extradata,isopenlink) {
+        saveExtractData: function($el, extradata, isopenlink) {
             var that = this;
             that.extradata.push(extradata);
             that.rendInfo();
             CaiyunScope.processedpaths = CaiyunScope.processedpaths.concat(CaiyunScope.currentpaths);
-            if(!isopenlink){
-            CaiyunScope.currentpaths = [];}
+            if (!isopenlink && CaiyunScope.datamode != 1) {
+                CaiyunScope.currentpaths = [];
+            }
             HightLight.repainSelectedShadowDom();
         },
         openLink: function(attrname) {
             var that = this;
+            var similarpath = CaiyunScope.similarpath;
+            if (!CaiyunScope.similarpath.pathstring) {
+                similarpath = {
+                    "pathstring": "BODY"
+                }
+            }
             var openpage = {
                 "extradata": that.extradata,
                 "css_selecter": that.css_selecter,
-                "parentpaths": CaiyunScope.parentpaths
+                "parentpaths": CaiyunScope.parentpaths,
+                "similarpath": similarpath,
+                "extraurl": that.extradata.slice(-1),
+                "domevent":that.domevent
             }
             CaiyunSteps[caiyunstep - 1] = openpage;
             chrome.storage.local.set({ caiyunsteps: CaiyunSteps }, function() { console.log(CaiyunSteps) });
-            // var el_a;
-            // $.each(CaiyunScope.currentpaths, function(i, ele) {
-            //     var $el = $(ele.pathstring);
-            //     if ($(ele.pathstring)[0].tagName == 'A') {
-            //         el_a = $(ele.pathstring).attr('href');
-            //         return false;
-            //     } else {
-            //         if ($el.find('a')[0]) {
-            //             el_a = $($el.find('a')[0]).attr('href');
-            //             return false;
-            //         }
-            //     }
-
-            // })
-            var $el=$(CaiyunScope.currentpaths[0].pathstring);
-            if ($el[0].tagName!='A') {
+            var $el = $(CaiyunScope.currentpaths[0].pathstring);
+            if ($el[0].tagName != 'A') {
                 alert('所选属性不是可点击的链接');
             } else {
                 chrome.storage.local.set({ caiyunstep: parseInt(caiyunstep) + 1 }, function() {
@@ -445,7 +543,6 @@ xtag.register('caiyun-operate-container', {
             var that = this;
             var $infotable = $(CaiyunScope.opeshadowcon).find("#infotable");
             $infotable.empty();
-            console.log(that.extradata)
             var infolist = getExtractInfo(that.extradata);
             $.each(infolist, function(i, ele) {
                 var inner = '<tr>' +
@@ -467,6 +564,10 @@ xtag.register('caiyun-operate-container', {
                 $container.find('.mode' + modeindex).show();
                 $container.find("#currentelenum").text(CaiyunScope.currentpaths.length);
             }
+        },
+        changeCatchStatus: function(status) {
+            CaiyunScope.startcatch = status;
+            $(this.shadow.querySelector('.catch-container')).find(".startcatch").text(status ? '停止选择页面元素' : '开始选择页面元素');
         }
     },
     events: {

@@ -121,7 +121,6 @@ function getExtractInfo(paths) {
 
 function constructPostData(data,url) {
     console.log(data)
-    console.log(url)
     var datatemp = {
         "id": 1,
         "name": "[构造抓取URL]",
@@ -137,9 +136,6 @@ function constructPostData(data,url) {
             "spidered_again": "true",
             "url_pattern": "",
             "url_filter": "",
-            "method": "get",
-            "req_headers": "",
-            "post_params": "",
             "timeout_ms": "300000",
             "res_tm_out": "10000",
             "user_agent_type": "pc",
@@ -155,17 +151,6 @@ function constructPostData(data,url) {
         },
         "open": true,
         "sons": [{
-                "id": 2,
-                "name": "[打开URL]",
-                "title": "打开URL",
-                "do": "openpage",
-                "setting": {
-                    "url": ""
-                },
-            "open": true,
-            "sons": [
-                {
-                "id": 3,
                 "name": "[循环处理]",
                 "title": "循环处理",
                 "do": "loop",
@@ -173,9 +158,17 @@ function constructPostData(data,url) {
                     "max_loops": "4",
                     "loop_type": "pa_iterator"
                 },
+            "open": true,
+            "sons": [
+                {
+                "name": "[打开URL]",
+                "title": "打开URL",
+                "do": "openpage",
+                "setting": {
+                    "url": ""
+                },
                 "open": true,
                 "sons": [{
-                        "id": 4,
                         "name": "[提取数据]",
                         "title": "提取数据",
                         "do": "extradata",
@@ -186,9 +179,9 @@ function constructPostData(data,url) {
                             "dupcheck_field": "",
                             "fields": {}
                         }
-                    },
+                    }
+                    ,
                     {
-                        "id": 5,
                         "name": "[发送事件]",
                         "title": "发送事件",
                         "do": "domevent",
@@ -219,11 +212,11 @@ function constructPostData(data,url) {
 
                 },
                 "cls_type":"field",
-                "cls_field":"list._SEED_URL",
+                "cls_field":"data0._SEED_URL",
                 "cls_map":[
 
                 ],
-                "join":"list",
+                "join":"data0",
                 "headlines":false,
                 "originate":""
             }
@@ -240,16 +233,17 @@ function constructPostData(data,url) {
         if (ele.similarpath) {
             d.sons[0].sons[0].sons[0].setting.rowscss_selecter = ele.similarpath.pathstring;
         }
-        if(i+1<data.length){
-            d.sons[0].sons[0].sons[0].setting.data_name="list";
-            d.sons[0].sons[0].setting.max_loops="10";
-            d.sons[0].sons[0].setting.loop_type="count";
+        d.sons[0].sons[0].sons[0].setting.data_name="data"+i;
+        d.sons[0].sons[0].sons[1].setting=ele.domevent;
+        if(i<=0){
+            d.sons[0].setting.max_loops="1";
+            d.sons[0].setting.loop_type="count";
         }
         else{
-            d.sons[0].sons[0].sons[0].setting.data_name="news_detail";
+            // d.sons[0].sons[0].sons[0].setting.data_name="data"+i;
             d.setting.seed_type="ref_cur_task";
-            d.setting.seed_ref_data="list";
-            d.setting.url_pattern="{url}";
+            d.setting.seed_ref_data="data"+(i-1);
+            d.setting.url_pattern='{'+data[i-1].extraurl[0].name+'}';
             d.sons[0].sons[0].sons.length=1;
         }
         d.sons[0].sons[0].sons[0].setting.fields = {};
@@ -263,7 +257,7 @@ function constructPostData(data,url) {
                 "extend": {
                     "download": false,
                     "clean": false,
-                    "attr_name": "",
+                    "attr_name": e.attr_name,
                     "const_val": "",
                     "strextract": false,
                     "strextractregular": "",
@@ -273,12 +267,12 @@ function constructPostData(data,url) {
                     "filtercsspath": "",
                     "filter_csspaths": ""
                 },
-                "data_name": (i+1)<data.length?"list":"news_detail",
-                "data_map_key": ((i+1)<data.length?"list.":"news_detail.") + e.name,
+                "data_name": "data"+i,
+                "data_map_key": "data"+i+"." + e.name,
                 "select": e.name
             }
             var map={};
-            map[((i+1)<data.length?"list.":"news_detail.") + e.name]=e.name;
+            map["data"+i+"." + e.name]=e.name;
             data_map.push(map);
             if (e.custom_css_selecter) {
                 fields[e.name].css_selecter = e.custom_css_selecter.pathstring

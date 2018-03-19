@@ -17,7 +17,7 @@
             }
             return sizes;
         },
-        addSelectedShadowDom: function(rootshadow, sizes, type, processed, current,parent) {
+        addSelectedShadowDom: function(rootshadow, sizes, type, processed, current,parent,page) {
             var rootshadow = rootshadow || this.rootshadow || null;
             var innerShadowRoot = document.createElement("div");
             innerShadowRoot.className = "selected-element  caiyun-highlight";
@@ -33,7 +33,7 @@
                 "position": "absolute",
                 "box-sizing": "border-box",
                 "border": type == 'A' ? "1px solid #08b91d" : "1px dashed #ff5722",
-                "background": parent?"rgba(179, 229, 252, 0.57)":(processed ? "rgba(255, 160, 0, 0.57)" : "rgba(2, 136, 209, 0.57)"),
+                "background": parent?"rgba(179, 229, 252, 0.57)":(page?"rgba(255, 160, 222, 0.57)":(processed ? "rgba(255, 160, 0, 0.57)" : "rgba(2, 136, 209, 0.57)")),
                 "box-shadow": current ? "0 0 0 2px #f71198" : "none",
                 "z-index": 99999,
                 "pointer-events": "none" //神属性
@@ -86,6 +86,7 @@
             var processedpaths=CaiyunScope.processedpaths;
             var currentpaths=CaiyunScope.currentpaths;
             var parentpaths=CaiyunScope.parentpaths;
+            var pagepath=CaiyunScope.pagepath;
             rootshadow = rootshadow || this.rootshadow || null;
             this.clearallSelectedShadowDom(rootshadow);
             var that = this;
@@ -111,6 +112,13 @@
                     }
                     $.extend(true, totalpaths[e.pathstring], e, { current: true })
                 })
+
+            }
+            if (pagepath.pathstring) {
+                    if (!totalpaths[pagepath.pathstring]) {
+                        totalpaths[pagepath.pathstring] = {};
+                    }
+                    $.extend(true, totalpaths[pagepath.pathstring], pagepath, { page: true })
 
             }
             if (parentpaths) {
